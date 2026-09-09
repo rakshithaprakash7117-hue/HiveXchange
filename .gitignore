@@ -1,0 +1,11 @@
+
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+database/*.db
+*.db
+.idea/
+.DS_Store

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>HiveXchange Defender Console</title>
+</head>
+
+<body>
+
+<h1>HiveXchange Defender Console</h1>
+
+<h2>Visitor State</h2>
+
+<div class="summary">
+    <div>
+        <h3>Total Login Attempts</h3>
+        <p>{{ total_logins }}</p>
+    </div>
+
+    <div>
+        <h3>Failed Logins</h3>
+        <p>{{ failed_logins }}</p>
+    </div>
+
+    <div>
+        <h3>Decoy Entries</h3>
+        <p>{{ decoy_logins }}</p>
+    </div>
+
+    <div>
+        <h3>Hard Triggers</h3>
+        <p>{{ hard_triggers }}</p>
+    </div>
+</div>
+
+<table border="1">
+    <tr>
+        <th>IP</th>
+        <th>Failed Attempts</th>
+        <th>Distinct Usernames</th>
+        <th>Risk Score</th>
+        <th>Deception</th>
+    </tr>
+
+    {% for visitor in visitors %}
+    <tr>
+        <td>
+    {% if visitor["deception_candidate"] == 1 %}
+        DECEPTION
+    {% elif visitor["risk_score"] >= 6 %}
+        SUSPICIOUS
+    {% elif visitor["risk_score"] >= 3 %}
+        WATCH
+    {% else %}
+        NORMAL
+    {% endif %}
+        </td>
+        <td>{{ display_ip(visitor["ip_address"]) }}</td>
+        <td>{{ visitor["failed_attempts"] }}</td>
+        <td>{{ visitor["distinct_usernames"] }}</td>
+        <td>{{ visitor["risk_score"] }}</td>
+        <td>{{ visitor["deception_candidate"] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+
+<h2>Recent Login Attempts</h2>
+
+<table border="1">
+    <tr>
+        <th>Time</th>
+        <th>IP</th>
+        <th>Username</th>
+        <th>Outcome</th>
+    </tr>
+
+    {% for login in recent_logins %}
+    <tr>
+        <td>{{ login["timestamp"] }}</td>
+        <td>{{ display_ip(login["ip_address"]) }}</td>
+        <td>{{ login["username"] }}</td>
+        <td>{{ login["outcome"] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+
+<h2>Recent Security Events</h2>
+
+<table border="1">
+    <tr>
+        <th>Time</th>
+        <th>IP</th>
+        <th>Event</th>
+        <th>Endpoint</th>
+    </tr>
+
+    {% for event in recent_events %}
+    <tr>
+        <td>{{ event["timestamp"] }}</td>
+        <td>{{ display_ip(event["ip_address"]) }}</td>
+        <td>{{ event["event_type"] }}</td>
+        <td>{{ event["endpoint"] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>

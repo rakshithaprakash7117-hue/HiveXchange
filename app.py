@@ -1,7 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for, session
-from services.event_logger import init_db, log_login_attempt, log_event
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from services.event_logger import init_db, log_login_attempt, log_event, get_visitor, create_visitor, register_failed_attempt, should_decieve, evaluate_deception, reset_visitor, register_hard_trigger
 from config import DATABASE_PATH
+from services.data import get_system_status, get_account_summary, get_market_data
 import os
+from services.detection_engine import handle_probe
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 
@@ -24,8 +27,19 @@ def login():
     user_agent=request.headers.get('User-Agent')
 
     log_login_attempt(ip_address=ip_address, username=username, password_length=len(password),
-                      user_agent=user_agent, request_method=request.method, endpoint=request.path)
+                      user_agent=user_agent, request_method=request.method, endpoint=request.path, outcome="DECOY_ACCEPTED")
 
+    if should_decieve(ip_address):
+        session['decoy_authenticated']=True
+        session['decoy_user']=username
+
+        return redirect(url_for('dashboard'))
+
+    register_failed_attempt(ip_address, username)
+    evaluate_deception(ip_address)
+
+    log_login_attempt(ip_address=ip_address,username=username,password_length=len(password),
+                      user_agent=user_agent,request_method=request.method,endpoint=request.path,outcome="FAILED")
 
     return render_template('login.html', error='Login Failed')
 
@@ -44,12 +58,93 @@ def wallet():
 
     return render_template('wallet.html')
 
-@app.route('/admin')
+@app.route("/admin")
 def admin():
-    log_event(ip_address=request.remote_addr, event_type='ADMIN_PROBE', endpoint=request.path,
-              user_agent=request.headers.get('User-Agent'), details='Visitor attempted access to decoy admin endpoint')
+    handle_probe(
+        ip_address=request.remote_addr,
+        path=request.path,
+        method=request.method,
+        user_agent=request.headers.get("User-Agent")
+    )
 
-    return render_template('admin.html')
+    return render_template("404.html"), 404
+
+@app.errorhandler(404)
+def page_not_found(error):
+
+    handle_probe(
+        ip_address=request.remote_addr,
+        path=request.path,
+        method=request.method,
+        user_agent=request.headers.get("User-Agent")
+    )
+
+    return render_template("404.html"), 404
+
+@app.errorhandler(405)
+def method_not_allowed(error):
+
+    handle_probe(
+        ip_address=request.remote_addr,
+        path=request.path,
+        method=request.method,
+        user_agent=request.headers.get("User-Agent")
+    )
+
+    return {
+        "error": "Method not allowed"
+    }, 405
+
+@app.route("/system/status")
+def system_status():
+    ip_address = request.remote_addr
+
+    log_event(
+        ip_address=ip_address,
+        event_type="CANARY_ENDPOINT_PROBE",
+        endpoint=request.path,
+        user_agent=request.headers.get("User-Agent"),
+        details="Visitor accessed unlinked system-status canary endpoint"
+    )
+
+    register_hard_trigger(
+        ip_address=ip_address,
+        event_type="CANARY_ENDPOINT_PROBE"
+    )
+
+    return jsonify(get_system_status())
+
+@app.route("/api/markets")
+def api_markets():
+    log_event(
+        ip_address=request.remote_addr,
+        event_type="API_ACCESS",
+        endpoint=request.path,
+        user_agent=request.headers.get("User-Agent"),
+        details="Synthetic market API requested"
+    )
+
+    return jsonify(get_market_data())
+
+@app.route("/api/account/summary")
+def api_account_summary():
+    log_event(
+        ip_address=request.remote_addr,
+        event_type="ACCOUNT_API_ACCESS",
+        endpoint=request.path,
+        user_agent=request.headers.get("User-Agent"),
+        details="Synthetic account summary requested"
+    )
+
+    return jsonify(get_account_summary())
+
+@app.route('/logout')
+def logout():
+
+    ip_address=request.remote_addr
+    session.clear()
+    reset_visitor(ip_address)
+    return redirect(url_for("home"))
 
 
 if __name__ == '__main__':

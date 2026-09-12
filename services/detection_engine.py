@@ -10,11 +10,7 @@ from config import (
     SUSPICIOUS_METHODS
 )
 
-from services.event_logger import (
-    create_visitor,
-    log_event,
-    register_hard_trigger
-)
+from services.event_logger import create_visitor, log_event, register_hard_trigger, update_visitor_state
 
 
 def handle_probe(ip_address, path, method, user_agent):
@@ -45,6 +41,8 @@ def handle_probe(ip_address, path, method, user_agent):
             ip_address,
             "HARD_PATH_PROBE"
         )
+
+        update_visitor_state(ip_address)
 
         return "HARD_TRIGGER"
 

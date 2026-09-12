@@ -1,5 +1,4 @@
 import sqlite3
-
 from flask import Flask, render_template
 from config import DATABASE_PATH
 
@@ -10,6 +9,58 @@ def get_db_connection():
     conn = sqlite3.connect(DATABASE_PATH)
     conn.row_factory = sqlite3.Row
     return conn
+
+def get_attack_timeline():
+    conn = get_db_connection()
+
+    event_rows = conn.execute("""
+        SELECT
+            timestamp,
+            ip_address,
+            event_type AS activity,
+            endpoint,
+            details
+        FROM events
+    """).fetchall()
+
+    login_rows = conn.execute("""
+        SELECT
+            timestamp,
+            ip_address,
+            outcome AS activity,
+            endpoint,
+            username AS details
+        FROM login_attempts
+    """).fetchall()
+
+    conn.close()
+
+    timeline = []
+
+    for row in event_rows:
+        timeline.append({
+            "timestamp": row["timestamp"],
+            "ip_address": row["ip_address"],
+            "activity": row["activity"],
+            "endpoint": row["endpoint"],
+            "details": row["details"]
+        })
+
+    for row in login_rows:
+        timeline.append({
+            "timestamp": row["timestamp"],
+            "ip_address": row["ip_address"],
+            "activity": row["activity"],
+            "endpoint": row["endpoint"],
+            "details": f"Username: {row['details']}"
+        })
+
+    timeline.sort(
+        key=lambda item: item["timestamp"],
+        reverse=True
+    )
+
+    return timeline[:30]
 
 
 @monitor_app.route("/")
@@ -61,11 +112,14 @@ def dashboard():
 
     conn.close()
 
+    timeline = get_attack_timeline()
+
     return render_template(
         "monitor/dashboard.html",
         visitors=visitors,
         recent_events=recent_events,
         recent_logins=recent_logins,
+        timeline=timeline,
         total_logins=total_logins,
         failed_logins=failed_logins,
         decoy_logins=decoy_logins,

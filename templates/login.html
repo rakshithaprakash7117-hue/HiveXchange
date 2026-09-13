@@ -1,45 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <title>HiveXchange</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HiveXchange — Digital Assets. Securely Connected.</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hive.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 </head>
-
 <body>
-
-    <h1>HiveXchange</h1>
-
-    <form action="/login" method="POST">
-
-        <input
-            type="text"
-            name="username"
-            placeholder="Email or username"
-            required
-        >
-
-        <br><br>
-
-        <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            required
-        >
-
-        <br><br>
-
-        <button type="submit">
-            Sign In
-        </button>
-
-    </form>
-
-    {% if error %}
-        <p>{{ error }}</p>
-    {% endif %}
-
+    <div class="auth-wrapper">
+        <!-- Top Live Market Ticker -->
+        <div style="background-color: var(--bg-app); border-bottom: 1px solid var(--border-subtle); padding: 0.6rem 2rem; display: flex; justify-content: space-between; align-items: center;">
+            <div class="ticker-bar">
+                <div class="ticker-item">
+                    <span class="ticker-symbol">BTC/USD</span>
+                    <span class="num-tabular">$62,450.00</span>
+                    <span class="trend-up">+2.15%</span>
+                </div>
+                <div class="ticker-item">
+                    <span class="ticker-symbol">ETH/USD</span>
+                    <span class="num-tabular">$3,420.50</span>
+                    <span class="trend-down">-0.85%</span>
+                </div>
+                <div class="ticker-item">
+                    <span class="ticker-symbol">SOL/USD</span>
+                    <span class="num-tabular">$145.20</span>
+                    <span class="trend-up">+4.80%</span>
+                </div>
+                <div class="ticker-item">
+                    <span class="ticker-symbol">USDT/USD</span>
+                    <span class="num-tabular">$1.00</span>
+                    <span class="trend-up">+0.01%</span>
+                </div>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--green-trend)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+                <span>Institutional Gateway Online</span>
+            </div>
+        </div>
+        <!-- Auth Center Box -->
+        <div class="auth-center">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <div class="auth-logo-box">
+                        <svg viewBox="0 0 100 100">
+                            <polygon points="50 3, 93 25, 93 75, 50 97, 7 75, 7 25" fill="none" stroke="#f5a623" stroke-width="6"/>
+                            <polygon points="50 18, 78 33, 78 67, 50 82, 22 67, 22 33" fill="rgba(245,166,35,0.15)" stroke="#f5a623" stroke-width="3"/>
+                            <text x="50" y="58" font-family="'Inter', sans-serif" font-weight="800" font-size="28" fill="#f5a623" text-anchor="middle">HX</text>
+                        </svg>
+                    </div>
+                    <h1 class="brand-name" style="font-size: 1.6rem;">Hive<span>Xchange</span></h1>
+                    <p class="auth-tagline">Digital Assets. Securely Connected.</p>
+                </div>
+                <!-- Backend Error Display -->
+                {% if error %}
+                <div class="auth-alert">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <span>{{ error if error != 'Error' else 'Email or password is incorrect.' }}</span>
+                </div>
+                {% endif %}
+                <!-- Login Form -->
+                <form action="{{ url_for('login') }}" method="POST">
+                    <div class="form-group">
+                        <label for="username" class="form-label">Username or Account ID</label>
+                        <input type="text" id="username" name="username" class="form-input" placeholder="enter your credentials" required autofocus autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" id="password" name="password" class="form-input" placeholder="••••••••••••" required autocomplete="current-password">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem; padding: 0.8rem;">
+                        Sign In to Trading Vault
+                    </button>
+                </form>
+                <div class="auth-links">
+                    <a href="#" onclick="alert('Password resets require hardware 2FA token. Please contact account compliance.'); return false;">Forgot password?</a>
+                    <a href="#" onclick="alert('Account registrations are currently by institutional invitation only.'); return false;">Create account</a>
+                </div>
+                <!-- Security Badges -->
+                <div style="margin-top: 2rem; padding-top: 1.25rem; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-around; font-size: 0.75rem; color: var(--text-muted);">
+                    <span style="display: flex; align-items: center; gap: 0.35rem;">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--amber-primary)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        256-bit Hardware SSL
+                    </span>
+                    <span style="display: flex; align-items: center; gap: 0.35rem;">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--amber-primary)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        SOC-2 Type II Certified
+                    </span>
+                </div>
+            </div>
+        </div>
+        <!-- Footer -->
+        <footer class="trust-footer">
+            <p>&copy; 2026 HiveXchange Financial Technologies Ltd. All rights reserved. Institutional Digital Asset Custody.</p>
+        </footer>
+    </div>
+    <script src="{{ url_for('static', filename='js/hive.js') }}"></script>
 </body>
-
 </html>

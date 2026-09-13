@@ -1,27 +1,224 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <title>HiveXchange Wallet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Asset Wallet — HiveXchange</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hive.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 </head>
-
 <body>
-
-    <h1>Wallet</h1>
-
-    <p>BTC Balance: 0.1842 BTC</p>
-    <p>ETH Balance: 2.73 ETH</p>
-
-    <h3>Recent Transaction</h3>
-
-    <p>
-        Withdrawal — 0.025 BTC<br>
-        Status: Pending
-    </p>
-
-    <a href="/dashboard">Back to Dashboard</a>
-
+    <div class="app-container">
+        <!-- Top Navbar Header -->
+        <header class="topbar">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div class="brand-header" style="margin: 0; padding: 0;">
+                    <svg class="brand-logo-hex" viewBox="0 0 100 100">
+                        <polygon points="50 3, 93 25, 93 75, 50 97, 7 75, 7 25" fill="none" stroke="#f5a623" stroke-width="8"/>
+                        <polygon points="50 20, 75 35, 75 65, 50 80, 25 65, 25 35" fill="rgba(245,166,35,0.2)"/>
+                        <text x="50" y="58" font-family="'Inter', sans-serif" font-weight="800" font-size="28" fill="#f5a623" text-anchor="middle">HX</text>
+                    </svg>
+                    <span class="brand-name">Hive<span>Xchange</span></span>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <div class="user-profile-badge">
+                    <div class="avatar-hex">VX</div>
+                    <span class="user-name">{{ username or session.get('username', 'Vault Account') }}</span>
+                </div>
+                <a href="{{ url_for('logout') }}" class="btn btn-secondary" style="padding: 0.4rem 0.85rem; font-size: 0.8rem;">Sign Out</a>
+            </div>
+        </header>
+        <div class="main-layout">
+            <!-- Sidebar Navigation -->
+            <aside class="sidebar">
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="{{ url_for('dashboard') }}">
+                            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" onclick="return false;">
+                            <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                            <span>Markets</span>
+                        </a>
+                    </li>
+                    <li class="nav-item active">
+                        <a href="{{ url_for('wallet') }}">
+                            <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="6" y1="8" x2="6.01" y2="8"/><line x1="10" y1="8" x2="18" y2="8"/></svg>
+                            <span>Wallet</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" onclick="return false;">
+                            <svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                            <span>Transactions</span>
+                        </a>
+                    </li>
+                </ul>
+                <div class="sidebar-footer">
+                    <div style="background-color: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.85rem; font-size: 0.8rem;">
+                        <div style="color: var(--text-muted); margin-bottom: 0.3rem;">Primary Custody Node</div>
+                        <div style="color: var(--amber-primary); font-weight: 600;" class="num-tabular">0x7A4F...92CD</div>
+                    </div>
+                </div>
+            </aside>
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Digital Asset Wallet</h1>
+                        <p class="page-subtitle">Multi-currency vault custody and settlement node.</p>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <button id="btnDepositAction" class="btn btn-primary">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Deposit
+                        </button>
+                        <button id="btnWithdrawAction" class="btn btn-secondary">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                            Withdraw
+                        </button>
+                        <button id="btnTransferAction" class="btn btn-outline">Transfer</button>
+                    </div>
+                </div>
+                <!-- Wallet Overview Cards -->
+                <div class="grid-summary">
+                    <div class="card card-amber-accent">
+                        <div class="card-title">Total Estimated Balance</div>
+                        <div class="card-metric num-tabular" id="val-wallet-total">$84,250.75</div>
+                        <div class="card-submetric" style="color: var(--text-muted);">Across 5 active network nodes</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Primary Deposit Address</div>
+                        <div class="card-metric num-tabular" style="font-size: 1.1rem; color: var(--amber-primary);">0x7A4F...92CD</div>
+                        <div class="card-submetric">
+                            <button class="copy-addr-btn btn btn-secondary" data-addr="0x7A4F89b1C9024eD849a204859d01228459a992CD" style="font-size: 0.75rem; padding: 0.2rem 0.6rem;">Copy Address</button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Security Enclave Policy</div>
+                        <div class="card-metric" style="font-size: 1.25rem;">Multi-Sig 3/5</div>
+                        <div class="card-submetric" style="color: var(--text-muted);">Hardware Security Module Active</div>
+                    </div>
+                </div>
+                <!-- Holdings Breakdown -->
+                <div class="table-container">
+                    <div class="table-header-box">
+                        <h2 class="table-title">Token Balances & Custody Allocations</h2>
+                    </div>
+                    <table class="hx-table">
+                        <thead>
+                            <tr>
+                                <th>Token / Asset</th>
+                                <th>Total Balance</th>
+                                <th>Available Balance</th>
+                                <th>Pending / Locked</th>
+                                <th>Assigned Address</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:0.75rem;">
+                                        <span style="font-weight:700; color:var(--amber-primary);" class="num-tabular">BTC</span>
+                                        <span>Bitcoin Cold Vault</span>
+                                    </div>
+                                </td>
+                                <td class="num-tabular">1.2500 BTC</td>
+                                <td class="num-tabular">1.2500 BTC</td>
+                                <td class="num-tabular" style="color:var(--text-muted);">0.0000 BTC</td>
+                                <td class="num-tabular" style="color:var(--text-secondary);">bc1q9x7a4f...38kp</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:0.75rem;">
+                                        <span style="font-weight:700; color:var(--amber-primary);" class="num-tabular">ETH</span>
+                                        <span>Ethereum Staking</span>
+                                    </div>
+                                </td>
+                                <td class="num-tabular">8.5000 ETH</td>
+                                <td class="num-tabular">8.5000 ETH</td>
+                                <td class="num-tabular" style="color:var(--text-muted);">0.0000 ETH</td>
+                                <td class="num-tabular" style="color:var(--text-secondary);">0x7A4F89...92CD</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:0.75rem;">
+                                        <span style="font-weight:700; color:var(--amber-primary);" class="num-tabular">USDT</span>
+                                        <span>Tether USD (ERC-20)</span>
+                                    </div>
+                                </td>
+                                <td class="num-tabular">19,950.00 USDT</td>
+                                <td class="num-tabular">7,450.00 USDT</td>
+                                <td class="num-tabular" style="color:var(--amber-primary); font-weight:600;">12,500.00 USDT (Pending)</td>
+                                <td class="num-tabular" style="color:var(--text-secondary);">0x7A4F89...92CD</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Wallet Activity Table -->
+                <div class="table-container">
+                    <div class="table-header-box">
+                        <h2 class="table-title">Recent Wallet Transfers & Settlement Logs</h2>
+                    </div>
+                    <table class="hx-table">
+                        <thead>
+                            <tr>
+                                <th>Transaction Hash / Ref</th>
+                                <th>Type</th>
+                                <th>Asset & Amount</th>
+                                <th>Destination Address</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="num-tabular" style="color:var(--amber-primary);">0x9a8f...4e12</td>
+                                <td>Withdrawal</td>
+                                <td class="num-tabular">12,500.00 USDT</td>
+                                <td class="num-tabular" style="color:var(--text-secondary);">0x3C81...09F4</td>
+                                <td><span class="status-badge status-badge-pending"><span class="status-dot"></span>Pending Multi-Sig</span></td>
+                            </tr>
+                            <tr>
+                                <td class="num-tabular" style="color:var(--amber-primary);">0x4b2c...88d1</td>
+                                <td>Deposit</td>
+                                <td class="num-tabular">2,500.00 USDT</td>
+                                <td class="num-tabular" style="color:var(--text-secondary);">0x7A4F...92CD</td>
+                                <td><span class="status-badge status-badge-success"><span class="status-dot"></span>Completed</span></td>
+                            </tr>
+                            <tr>
+                                <td class="num-tabular" style="color:var(--amber-primary);">0x1d9e...11a0</td>
+                                <td>Deposit</td>
+                                <td class="num-tabular">0.5000 BTC</td>
+                                <td class="num-tabular" style="color:var(--text-secondary);">bc1q9x...38kp</td>
+                                <td><span class="status-badge status-badge-success"><span class="status-dot"></span>Completed</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+    </div>
+    <!-- Action Modal -->
+    <div id="walletActionModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle" style="font-weight: 700; font-size: 1.1rem;">Wallet Action</h3>
+                <button id="closeModalBtn" class="modal-close">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div id="modalBodyContent">
+                <!-- Injected via wallet.js -->
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/hive.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/wallet.js') }}"></script>
 </body>
-
 </html>

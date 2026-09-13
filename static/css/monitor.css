@@ -1,0 +1,344 @@
+/* ==========================================================================
+   HIVEXCHANGE — DEFENDER MONITORING CONSOLE DESIGN SYSTEM (monitor.css)
+   ========================================================================== */
+:root {
+  --soc-bg-base: #08090d;
+  --soc-bg-panel: #0e111a;
+  --soc-bg-card: #131724;
+  --soc-bg-hover: #1b2030;
+
+  --soc-border: rgba(255, 255, 255, 0.08);
+  --soc-border-active: rgba(245, 166, 35, 0.3);
+
+  /* Telemetry Status Colors */
+  --soc-accent-amber: #f5a623;
+  --soc-accent-cyan: #06b6d4;
+  --soc-accent-red: #ef4444;
+  --soc-accent-purple: #a855f7;
+  --soc-accent-green: #10b981;
+  --soc-accent-yellow: #eab308;
+
+  --soc-text-main: #f1f5f9;
+  --soc-text-muted: #94a3b8;
+  --soc-text-dim: #64748b;
+
+  --soc-font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  --soc-font-sans: 'Inter', system-ui, sans-serif;
+}
+body.soc-body {
+  background-color: var(--soc-bg-base);
+  color: var(--soc-text-main);
+  font-family: var(--soc-font-sans);
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+/* Header Navbar */
+.soc-navbar {
+  background-color: var(--soc-bg-panel);
+  border-bottom: 1px solid var(--soc-border);
+  height: 60px;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.soc-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+}
+.soc-brand-icon {
+  width: 24px;
+  height: 24px;
+  fill: var(--soc-accent-amber);
+}
+.soc-tag {
+  background-color: rgba(245, 166, 35, 0.15);
+  color: var(--soc-accent-amber);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid rgba(245, 166, 35, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.soc-status-pulse {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--soc-text-muted);
+}
+.soc-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--soc-accent-green);
+  box-shadow: 0 0 8px var(--soc-accent-green);
+  animation: socPulse 2s infinite;
+}
+@keyframes socPulse {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.2); }
+  100% { opacity: 1; transform: scale(1); }
+}
+/* Layout */
+.soc-wrapper {
+  padding: 1.5rem;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+.soc-grid-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.soc-kpi-card {
+  background-color: var(--soc-bg-card);
+  border: 1px solid var(--soc-border);
+  border-radius: 8px;
+  padding: 1.25rem;
+  position: relative;
+  overflow: hidden;
+}
+.soc-kpi-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 3px;
+  background-color: var(--soc-accent-amber);
+}
+.soc-kpi-card.kpi-red::before { background-color: var(--soc-accent-red); }
+.soc-kpi-card.kpi-purple::before { background-color: var(--soc-accent-purple); }
+.soc-kpi-card.kpi-cyan::before { background-color: var(--soc-accent-cyan); }
+.soc-kpi-label {
+  font-size: 0.75rem;
+  color: var(--soc-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.soc-kpi-value {
+  font-size: 2rem;
+  font-weight: 700;
+  font-family: var(--soc-font-mono);
+  color: var(--soc-text-main);
+}
+.soc-kpi-subtext {
+  font-size: 0.75rem;
+  color: var(--soc-text-dim);
+  margin-top: 0.4rem;
+}
+/* Tables Section */
+.soc-section {
+  background-color: var(--soc-bg-panel);
+  border: 1px solid var(--soc-border);
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+.soc-section-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--soc-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.01);
+}
+.soc-section-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--soc-text-main);
+}
+.soc-section-title svg {
+  width: 16px;
+  height: 16px;
+  stroke: var(--soc-accent-amber);
+}
+.soc-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-family: var(--soc-font-mono);
+  font-size: 0.8rem;
+}
+.soc-table th {
+  padding: 0.75rem 1.25rem;
+  color: var(--soc-text-muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--soc-border);
+  background-color: rgba(0, 0, 0, 0.2);
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+}
+.soc-table td {
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid var(--soc-border);
+  color: var(--soc-text-main);
+}
+.soc-table tbody tr:hover {
+  background-color: var(--soc-bg-hover);
+}
+/* Threat State Badges */
+.badge-state {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.badge-NORMAL {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: var(--soc-accent-green);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.badge-WATCH {
+  background-color: rgba(6, 182, 212, 0.15);
+  color: var(--soc-accent-cyan);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+}
+.badge-SUSPICIOUS {
+  background-color: rgba(234, 179, 8, 0.15);
+  color: var(--soc-accent-yellow);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+}
+.badge-DECEPTION {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: var(--soc-accent-red);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+}
+/* Outcome Badges */
+.badge-outcome-FAILED {
+  color: var(--soc-accent-red);
+  font-weight: 700;
+}
+.badge-outcome-VALID_USER {
+  color: var(--soc-accent-green);
+  font-weight: 700;
+}
+.badge-outcome-DECOY_ACCEPTED {
+  color: var(--soc-accent-amber);
+  font-weight: 700;
+  background-color: rgba(245, 166, 35, 0.15);
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+}
+/* Event Type Badges */
+.badge-event {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--soc-border);
+}
+.event-HARD_PATH_PROBE, .event-CANARY_ENDPOINT_PROBE {
+  color: var(--soc-accent-red);
+  border-color: rgba(239, 68, 68, 0.3);
+  background-color: rgba(239, 68, 68, 0.1);
+}
+.event-DECOY_ACCESS {
+  color: var(--soc-accent-amber);
+  border-color: rgba(245, 166, 35, 0.3);
+  background-color: rgba(245, 166, 35, 0.1);
+}
+/* Vertical Attack Timeline Tree */
+.timeline-container {
+  padding: 1.5rem;
+  position: relative;
+}
+.timeline-container::before {
+  content: "";
+  position: absolute;
+  top: 1.5rem;
+  bottom: 1.5rem;
+  left: 2.25rem;
+  width: 2px;
+  background-color: var(--soc-border);
+}
+.timeline-item {
+  position: relative;
+  padding-left: 2.5rem;
+  margin-bottom: 1.25rem;
+}
+.timeline-item:last-child {
+  margin-bottom: 0;
+}
+.timeline-node {
+  position: absolute;
+  left: 0.3rem;
+  top: 0.2rem;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: var(--soc-bg-card);
+  border: 2px solid var(--soc-text-dim);
+  z-index: 2;
+}
+.timeline-item.node-probe .timeline-node {
+  border-color: var(--soc-accent-red);
+  background-color: var(--soc-accent-red);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+}
+.timeline-item.node-decoy .timeline-node {
+  border-color: var(--soc-accent-amber);
+  background-color: var(--soc-accent-amber);
+  box-shadow: 0 0 8px rgba(245, 166, 35, 0.5);
+}
+.timeline-card {
+  background-color: var(--soc-bg-card);
+  border: 1px solid var(--soc-border);
+  border-radius: 6px;
+  padding: 0.85rem 1.1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.timeline-main {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.timeline-time {
+  font-family: var(--soc-font-mono);
+  color: var(--soc-text-muted);
+  font-size: 0.75rem;
+}
+.timeline-title {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--soc-text-main);
+}
+.timeline-detail {
+  font-family: var(--soc-font-mono);
+  color: var(--soc-text-dim);
+  font-size: 0.75rem;
+}
+/* Two Column Layout */
+.soc-flex-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+}
+@media (max-width: 1100px) {
+  .soc-grid-cards { grid-template-columns: repeat(2, 1fr); }
+  .soc-flex-grid { grid-template-columns: 1fr; }
+}

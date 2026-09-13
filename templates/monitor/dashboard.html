@@ -3,138 +3,663 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>HiveXchange Defender Console</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Defender Console — HiveXchange Security Telemetry</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/monitor.css') }}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap"
+          rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
-<body>
 
-<h1>HiveXchange Defender Console</h1>
+<body class="soc-body">
 
-<h2>Visitor State</h2>
+<!-- =========================
+     TOP SOC HEADER
+========================= -->
 
-<div class="summary">
-    <div>
-        <h3>Total Login Attempts</h3>
-        <p>{{ total_logins }}</p>
+<header class="soc-navbar">
+
+    <div class="soc-brand">
+
+        <svg class="soc-brand-icon"
+             viewBox="0 0 100 100">
+
+            <polygon
+                points="50 3, 93 25, 93 75, 50 97, 7 75, 7 25"
+                fill="none"
+                stroke="#f5a623"
+                stroke-width="8"/>
+
+            <circle
+                cx="50"
+                cy="50"
+                r="16"
+                fill="#f5a623"/>
+
+        </svg>
+
+        <span>
+            HiveXchange
+            <span style="color:var(--soc-accent-amber);">
+                Defender SOC
+            </span>
+        </span>
+
+        <span class="soc-tag">
+            Defender Console · Local
+        </span>
+
     </div>
 
-    <div>
-        <h3>Failed Logins</h3>
-        <p>{{ failed_logins }}</p>
+
+    <div class="soc-status-pulse">
+
+        <span class="soc-pulse-dot"></span>
+
+        <span>
+            Behavior-Adaptive Honeypot Active
+        </span>
+
     </div>
 
-    <div>
-        <h3>Decoy Entries</h3>
-        <p>{{ decoy_logins }}</p>
+</header>
+
+
+
+<div class="soc-wrapper">
+
+
+    <!-- =========================
+         KPI CARDS
+    ========================= -->
+
+    <div class="soc-grid-cards">
+
+        <div class="soc-kpi-card kpi-cyan">
+
+            <div class="soc-kpi-label">
+                Total Login Attempts
+            </div>
+
+            <div class="soc-kpi-value">
+                {{ total_logins|default(0) }}
+            </div>
+
+            <div class="soc-kpi-subtext">
+                All ingress authentication queries
+            </div>
+
+        </div>
+
+
+        <div class="soc-kpi-card kpi-red">
+
+            <div class="soc-kpi-label">
+                Failed Logins
+            </div>
+
+            <div class="soc-kpi-value">
+                {{ failed_logins|default(0) }}
+            </div>
+
+            <div class="soc-kpi-subtext">
+                Authentication rejection events
+            </div>
+
+        </div>
+
+
+        <div class="soc-kpi-card">
+
+            <div class="soc-kpi-label">
+                Decoy Diversions
+            </div>
+
+            <div class="soc-kpi-value">
+                {{ decoy_logins|default(0) }}
+            </div>
+
+            <div class="soc-kpi-subtext">
+                Sessions diverted to synthetic environment
+            </div>
+
+        </div>
+
+
+        <div class="soc-kpi-card kpi-purple">
+
+            <div class="soc-kpi-label">
+                Hard Triggers
+            </div>
+
+            <div class="soc-kpi-value">
+                {{ hard_triggers|default(0) }}
+            </div>
+
+            <div class="soc-kpi-subtext">
+                High-confidence probe events
+            </div>
+
+        </div>
+
     </div>
 
-    <div>
-        <h3>Hard Triggers</h3>
-        <p>{{ hard_triggers }}</p>
+
+
+    <!-- =========================
+         VISITOR THREAT MATRIX
+    ========================= -->
+
+    <div class="soc-section">
+
+        <div class="soc-section-header">
+
+            <div class="soc-section-title">
+
+                <svg viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2">
+
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+
+                </svg>
+
+                <span>
+                    Visitor Threat State & Risk Matrix
+                </span>
+
+            </div>
+
+            <span style="font-size:0.75rem; color:var(--soc-text-dim);">
+                Live Behavioral Tracking Engine
+            </span>
+
+        </div>
+
+
+        <table class="soc-table">
+
+            <thead>
+            <tr>
+                <th>Visitor IP</th>
+                <th>Failed Attempts</th>
+                <th>Distinct Usernames</th>
+                <th>Risk Score</th>
+                <th>Threat State</th>
+                <th>Deception Status</th>
+            </tr>
+            </thead>
+
+
+            <tbody>
+
+            {% if visitors %}
+
+                {% for v in visitors %}
+
+                <tr>
+
+                    <td style="font-weight:700;">
+                        {{ display_ip(v["ip_address"]) }}
+                    </td>
+
+                    <td>
+                        {{ v["failed_attempts"] }}
+                    </td>
+
+                    <td>
+                        {{ v["distinct_usernames"] }}
+                    </td>
+
+                    <td style="font-weight:700; color:var(--soc-accent-amber);">
+                        {{ v["risk_score"] }}
+                    </td>
+
+                    <td>
+
+                        <span class="badge-state badge-{{ v['state'] }}">
+                            {{ v["state"] }}
+                        </span>
+
+                    </td>
+
+                    <td>
+
+                        {% if v["deception_candidate"] == 1 %}
+
+                            <span class="badge-state badge-DECEPTION">
+                                ACTIVE
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge-state badge-NORMAL">
+                                NOT ACTIVE
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+
+            {% else %}
+
+                <tr>
+                    <td colspan="6"
+                        class="soc-empty">
+                        No active visitor telemetry.
+                    </td>
+                </tr>
+
+            {% endif %}
+
+            </tbody>
+
+        </table>
+
     </div>
+
+
+
+    <!-- =========================
+         TWO COLUMN GRID
+    ========================= -->
+
+    <div class="soc-flex-grid">
+
+
+        <!-- =========================
+             LEFT COLUMN
+        ========================= -->
+
+        <div>
+
+
+            <!-- =========================
+                 ATTACK TIMELINE
+            ========================= -->
+
+            <div class="soc-section">
+
+                <div class="soc-section-header">
+
+                    <div class="soc-section-title">
+
+                        <svg viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2">
+
+                            <circle cx="12"
+                                    cy="12"
+                                    r="10"/>
+
+                            <polyline points="12 6 12 12 16 14"/>
+
+                        </svg>
+
+                        <span>
+                            Attack Sequence Chronology Timeline
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="timeline-container">
+
+
+                    {% if timeline %}
+
+
+                        {% for item in timeline %}
+
+
+                        <div class="timeline-item
+                            {% if 'PROBE' in item['activity'] %}
+                                node-probe
+                            {% elif 'DECOY' in item['activity'] %}
+                                node-decoy
+                            {% endif %}">
+
+
+                            <div class="timeline-node"></div>
+
+
+                            <div class="timeline-card">
+
+                                <div class="timeline-main">
+
+                                    <span class="timeline-time">
+                                        {{ item["timestamp"] }}
+                                    </span>
+
+
+                                    <span class="timeline-title">
+
+                                        {{ display_ip(item["ip_address"]) }}
+                                        &mdash;
+
+                                        <span class="badge-event event-{{ item['activity'] }}">
+                                            {{ item["activity"] }}
+                                        </span>
+
+                                    </span>
+
+                                </div>
+
+
+                                <div class="timeline-detail">
+
+                                    {% if item["endpoint"] %}
+                                        {{ item["endpoint"] }}
+                                    {% endif %}
+
+                                    {% if item["details"] %}
+                                        — {{ item["details"] }}
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        {% endfor %}
+
+
+                    {% else %}
+
+                        <div class="soc-empty">
+                            No security activity recorded yet.
+                        </div>
+
+                    {% endif %}
+
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =========================
+                 SECURITY EVENT LOG
+            ========================= -->
+
+            <div class="soc-section">
+
+                <div class="soc-section-header">
+
+                    <div class="soc-section-title">
+
+                        <svg viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2">
+
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+
+                            <polyline points="14 2 14 8 20 8"/>
+
+                        </svg>
+
+                        <span>
+                            Security Probe Events Log
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <table class="soc-table">
+
+                    <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Visitor IP</th>
+                        <th>Event Type</th>
+                        <th>Target Endpoint</th>
+                    </tr>
+                    </thead>
+
+
+                    <tbody>
+
+
+                    {% if recent_events %}
+
+
+                        {% for ev in recent_events %}
+
+
+                        <tr>
+
+                            <td>
+                                {{ ev["timestamp"] }}
+                            </td>
+
+                            <td>
+                                {{ display_ip(ev["ip_address"]) }}
+                            </td>
+
+                            <td>
+
+                                <span class="badge-event event-{{ ev['event_type'] }}">
+                                    {{ ev["event_type"] }}
+                                </span>
+
+                            </td>
+
+                            <td>
+                                {{ ev["endpoint"] }}
+                            </td>
+
+                        </tr>
+
+
+                        {% endfor %}
+
+
+                    {% else %}
+
+                        <tr>
+                            <td colspan="4"
+                                class="soc-empty">
+                                No security events recorded yet.
+                            </td>
+                        </tr>
+
+                    {% endif %}
+
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =========================
+             RIGHT COLUMN
+        ========================= -->
+
+        <div>
+
+
+            <!-- =========================
+                 RECENT LOGIN ATTEMPTS
+            ========================= -->
+
+            <div class="soc-section">
+
+                <div class="soc-section-header">
+
+                    <div class="soc-section-title">
+
+                        <svg viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2">
+
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+
+                            <polyline points="10 17 15 12 10 7"/>
+
+                            <line x1="15"
+                                  y1="12"
+                                  x2="3"
+                                  y2="12"/>
+
+                        </svg>
+
+                        <span>
+                            Recent Ingress Logins
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <table class="soc-table">
+
+                    <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>IP</th>
+                        <th>Username</th>
+                        <th>Outcome</th>
+                    </tr>
+                    </thead>
+
+
+                    <tbody>
+
+
+                    {% if recent_logins %}
+
+
+                        {% for lg in recent_logins %}
+
+
+                        <tr>
+
+                            <td>
+                                {{ lg["timestamp"] }}
+                            </td>
+
+                            <td>
+                                {{ display_ip(lg["ip_address"]) }}
+                            </td>
+
+                            <td>
+                                {{ lg["username"] }}
+                            </td>
+
+                            <td>
+
+                                <span class="badge-outcome-{{ lg['outcome'] }}">
+                                    {{ lg["outcome"] }}
+                                </span>
+
+                            </td>
+
+                        </tr>
+
+
+                        {% endfor %}
+
+
+                    {% else %}
+
+                        <tr>
+                            <td colspan="4"
+                                class="soc-empty">
+                                No authentication attempts recorded yet.
+                            </td>
+                        </tr>
+
+                    {% endif %}
+
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+
+            <!-- =========================
+                 LOGIN OUTCOME CHART
+            ========================= -->
+
+            <div class="soc-section"
+                 style="padding: 1.25rem;">
+
+
+                <div class="soc-section-title"
+                     style="margin-bottom: 1rem;">
+
+                    <span>
+                        Authentication Ingress Distribution
+                    </span>
+
+                </div>
+
+
+                <div style="height: 200px;">
+
+                    <canvas
+                        id="chartLoginOutcomes"
+
+                        data-failed="{{ failed_logins|default(0) }}"
+
+                        data-valid="{{
+                            total_logins|default(0)
+                            - failed_logins|default(0)
+                            - decoy_logins|default(0)
+                        }}"
+
+                        data-decoy="{{ decoy_logins|default(0) }}">
+                    </canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
 
-<h2>Attack Timeline</h2>
 
-<div class="timeline">
-
-    {% for item in timeline %}
-
-    <div class="timeline-item">
-
-        <strong>{{ item["activity"] }}</strong>
-
-        <p>
-            {{ display_ip(item["ip_address"]) }}
-            |
-            {{ item["endpoint"] }}
-        </p>
-
-        <p>
-            {{ item["details"] }}
-        </p>
-
-        <small>
-            {{ item["timestamp"] }}
-        </small>
-
-    </div>
-
-    {% endfor %}
-
-</div>
-<table border="1">
-    <tr>
-        <th>IP</th>
-        <th>Failed Attempts</th>
-        <th>Distinct Usernames</th>
-        <th>Risk Score</th>
-        <th>Deception</th>
-    </tr>
-
-    {% for visitor in visitors %}
-    <tr>
-        <td>
-    {% if visitor["deception_candidate"] == 1 %}
-        DECEPTION
-    {% elif visitor["risk_score"] >= 6 %}
-        SUSPICIOUS
-    {% elif visitor["risk_score"] >= 3 %}
-        WATCH
-    {% else %}
-        NORMAL
-    {% endif %}
-        </td>
-        <td>{{ display_ip(visitor["ip_address"]) }}</td>
-        <td>{{ visitor["failed_attempts"] }}</td>
-        <td>{{ visitor["distinct_usernames"] }}</td>
-        <td>{{ visitor["risk_score"] }}</td>
-        <td>{{ visitor["deception_candidate"] }}</td>
-    </tr>
-    {% endfor %}
-</table>
-
-
-<h2>Recent Login Attempts</h2>
-
-<table border="1">
-    <tr>
-        <th>Time</th>
-        <th>IP</th>
-        <th>Username</th>
-        <th>Outcome</th>
-    </tr>
-
-    {% for login in recent_logins %}
-    <tr>
-        <td>{{ login["timestamp"] }}</td>
-        <td>{{ display_ip(login["ip_address"]) }}</td>
-        <td>{{ login["username"] }}</td>
-        <td>{{ login["outcome"] }}</td>
-    </tr>
-    {% endfor %}
-</table>
-
-
-<h2>Recent Security Events</h2>
-
-<table border="1">
-    <tr>
-        <th>Time</th>
-        <th>IP</th>
-        <th>Event</th>
-        <th>Endpoint</th>
-    </tr>
-
-    {% for event in recent_events %}
-    <tr>
-        <td>{{ event["timestamp"] }}</td>
-        <td>{{ display_ip(event["ip_address"]) }}</td>
-        <td>{{ event["event_type"] }}</td>
-        <td>{{ event["endpoint"] }}</td>
-    </tr>
-    {% endfor %}
-</table>
+<script src="{{ url_for('static', filename='js/monitor.js') }}"></script>
 
 </body>
+
 </html>

@@ -51,7 +51,7 @@ HiveXchange/
 ## Setup
 
 ```bash
-git clone <your-repository-url>
+git clone <https://github.com/rakshithaprakash7117-hue/HiveXchange.git>
 cd HiveXchange
 python3 -m venv .venv
 source .venv/bin/activate
